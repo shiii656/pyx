@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>翻翻花园 · macOS 桌面应用</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23F6F1E7'/%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%232F5D3A' stroke-width='3'/%3E%3Cpath d='M32 14 C36 24 36 34 32 48 C28 34 28 24 32 14 Z' fill='none' stroke='%232F5D3A' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='20' r='5' fill='%23C96F4A'/%3E%3Ccircle cx='44' cy='32' r='4' fill='%23C96F4A'/%3E%3Ccircle cx='20' cy='32' r='4' fill='%23C96F4A'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #F6F1E7;
+    --paper-deep: #ECE4D2;
+    --ink: #22301F;
+    --green: #2F5D3A;
+    --green-deep: #1E3B28;
+    --petal: #C96F4A;
+    --gold: #C9A227;
+    --line: rgba(34,48,31,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* ===== Hero ===== */
+  .hero {
+    position: relative;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 88px 24px 72px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .hero-kicker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--green);
+    margin-bottom: 22px;
+  }
+  .hero-kicker::before {
+    content: "";
+    width: 18px; height: 18px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 42%, var(--green) 44%, var(--green) 56%, transparent 58%);
+  }
+  .hero h1 {
+    font-family: Georgia, "Songti SC", "SimSun", serif;
+    font-size: clamp(52px, 9vw, 88px);
+    font-weight: 700;
+    letter-spacing: 4px;
+    line-height: 1.12;
+    color: var(--green-deep);
+  }
+  .hero-sub {
+    margin-top: 20px;
+    font-size: clamp(16px, 2.4vw, 19px);
+    color: #4a5a46;
+    max-width: 34em;
+  }
+  .hero-actions {
+    margin-top: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+  }
+  .btn-download {
+    display: inline-block;
+    padding: 16px 30px;
+    background: var(--green-deep);
+    color: #F6F1E7;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 999px;
+    transition: transform .18s ease, background .18s ease;
+  }
+  .btn-download:hover { background: var(--green); transform: translateY(-2px); }
+  .btn-ghost {
+    display: inline-block;
+    padding: 15px 26px;
+    border: 1.5px solid var(--line);
+    color: var(--green-deep);
+    font-size: 15px;
+    text-decoration: none;
+    border-radius: 999px;
+    transition: border-color .18s ease, color .18s ease;
+  }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  .hero-version {
+    width: 100%;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #6b7767;
+  }
+  .hero-art {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 260px;
+  }
+  .hero-art svg { width: min(340px, 78vw); height: auto; }
+  .hero-art::before {
+    content: "";
+    position: absolute;
+    inset: 8% 14%;
+    background: var(--paper-deep);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .hero-art svg { position: relative; z-index: 1; }
+  @media (min-width: 820px) {
+    .hero { grid-template-columns: 1.15fr 0.85fr; padding-top: 110px; padding-bottom: 96px; }
+    .hero-version { width: auto; margin-top: 0; }
+  }
+  /* ===== 分区 ===== */
+  section { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--line);
+    margin-bottom: 34px;
+  }
+  .sec-head .num {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    color: var(--petal);
+  }
+  .sec-head h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--green-deep);
+    letter-spacing: 1px;
+  }
+  /* 三步说明（真实序列，用编号） */
+  .steps { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 90px; }
+  .step {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    padding: 22px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .step .idx {
+    font-family: Georgia, serif;
+    font-size: 30px;
+    color: var(--petal);
+    line-height: 1;
+  }
+  .step h3 { font-size: 17px; font-weight: 700; color: var(--green-deep); margin-bottom: 6px; }
+  .step p { font-size: 15px; color: #4a5a46; }
+  .step code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: rgba(47,93,58,0.1);
+    color: var(--green-deep);
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+  @media (min-width: 820px) {
+    .steps { grid-template-columns: repeat(3, 1fr); gap: 30px; }
+    .step { border-bottom: none; padding: 0; }
+    .step:not(:first-child) { border-left: 1px solid var(--line); padding-left: 26px; }
+  }
+  /* ===== 关于 ===== */
+  .about {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-bottom: 96px;
+  }
+  .about-text p { font-size: 16px; color: #4a5a46; max-width: 46em; }
+  .about-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    font-size: 13.5px;
+    color: var(--green-deep);
+    background: transparent;
+  }
+  .chip::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex: none;
+  }
+  @media (min-width: 820px) {
+    .about { grid-template-columns: 1.2fr 0.8fr; gap: 60px; align-items: start; }
+  }
+  /* ===== 玩法说明 ===== */
+  .play-block { margin-bottom: 42px; }
+  .block-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-deep);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .block-title::before {
+    content: "";
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--petal);
+    flex: none;
+  }
+  .diff-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+  }
+  .diff-table th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7767;
+    padding: 10px 12px;
+    border-bottom: 1.5px solid var(--line);
+  }
+  .diff-table td {
+    font-size: 15px;
+    padding: 13px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .diff-table tr:last-child td { border-bottom: none; }
+  .diff-table td:first-child { font-weight: 700; color: var(--green-deep); }
+  .rule-list { list-style: none; }
+  .rule-list li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 11px;
+    font-size: 14.5px;
+    color: #4a5a46;
+  }
+  .rule-list li::before {
+    content: "";
+    position: absolute;
+    left: 2px; top: 0.62em;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    opacity: 0.75;
+  }
+  .rule-list b { color: var(--green-deep); font-weight: 700; }
+  .note { font-size: 13.5px; color: #6b7767; margin: 12px 0 0; }
+  .play-grid { display: grid; grid-template-columns: 1fr; gap: 0 56px; }
+  .play-wide { grid-column: 1 / -1; }
+  @media (min-width: 820px) {
+    .play-grid { grid-template-columns: 1fr 1fr; }
+  }
+  /* ===== Footer ===== */
+  footer {
+    border-top: 1.5px solid var(--line);
+    padding: 30px 24px 44px;
+    text-align: center;
+    font-size: 13px;
+    color: #6b7767;
+  }
+  footer .flower {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 1.5px solid var(--petal);
+    border-radius: 50%;
+    margin: 0 6px;
+    vertical-align: -1px;
+  }
+  /* 入场动效（克制，仅 hero） */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero > div { animation: rise .6s ease both; }
+    .hero-art { animation: rise .7s .12s ease both; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Hero ===== -->
+<header class="hero">
+  <div>
+    <div class="hero-kicker">macOS 桌面应用</div>
+    <h1>翻翻花园</h1>
+    <p class="hero-sub">在桌面上种一座小花园。轻轻翻动，四季流转，让每次打开都有一小片自己的风景。</p>
+    <div class="hero-actions">
+      <a class="btn-download" href="https://github.com/shyzong63-creator/pyx/raw/main/%E7%BF%BB%E7%BF%BB%E8%8A%B1%E5%9B%AD-Mac-%E4%B8%89%E6%A1%A3%E5%85%A5%E5%8F%A3%E7%89%88.zip">下载「翻翻花园」</a>
+      <a class="btn-ghost" href="https://github.com/shyzong63-creator/pyx" target="_blank" rel="noopener">在 GitHub 上查看</a>
+      <span class="hero-version">v1.0 · 三档入口版 · zip 安装包</span>
+    </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="0 0 340 340" fill="none">
+      <circle cx="170" cy="170" r="148" stroke="#2F5D3A" stroke-width="2.5"/>
+      <circle cx="170" cy="170" r="128" stroke="#2F5D3A" stroke-width="1" stroke-dasharray="3 7" opacity="0.6"/>
+      <!-- 主花 -->
+      <g stroke="#2F5D3A" stroke-width="2.5" stroke-linecap="round">
+        <path d="M170 218 C170 176 170 150 170 122"/>
+        <path d="M170 158 C146 150 132 138 128 120"/>
+        <path d="M170 158 C194 150 208 138 212 120"/>
+      </g>
+      <g fill="#C96F4A">
+        <circle cx="170" cy="104" r="17"/>
+        <circle cx="170" cy="104" r="6" fill="#F6F1E7"/>
+      </g>
+      <g fill="#2F5D3A">
+        <ellipse cx="128" cy="118" rx="10" ry="5" transform="rotate(-28 128 118)"/>
+        <ellipse cx="212" cy="118" rx="10" ry="5" transform="rotate(28 212 118)"/>
+      </g>
+      <!-- 左枝 -->
+      <g stroke="#2F5D3A" stroke-width="2" stroke-linecap="round" opacity="0.85">
+        <path d="M170 190 C130 196 104 214 92 240"/>
+        <path d="M132 208 C118 200 106 198 94 202"/>
+      </g>
+      <g fill="#C9A227">
+        <circle cx="92" cy="240" r="9"/>
+        <circle cx="92" cy="240" r="3.5" fill="#F6F1E7"/>
+      </g>
+      <ellipse cx="94" cy="202" rx="9" ry="4.5" transform="rotate(-20 94 202)" fill="#2F5D3A" opacity="0.8"/>
+      <!-- 右枝 -->
+      <g stroke="#2F5D3A" stroke-width="2" stroke-linecap="round" opacity="0.85">
+        <path d="M170 196 C206 202 230 220 240 246"/>
+        <path d="M206 216 C220 208 234 206 246 210"/>
+      </g>
+      <g fill="#C96F4A">
+        <circle cx="240" cy="246" r="9"/>
+        <circle cx="240" cy="246" r="3.5" fill="#F6F1E7"/>
+      </g>
+      <ellipse cx="246" cy="210" rx="9" ry="4.5" transform="rotate(24 246 210)" fill="#2F5D3A" opacity="0.8"/>
+      <!-- 底部小花 -->
+      <g stroke="#2F5D3A" stroke-width="1.8" stroke-linecap="round">
+        <path d="M170 218 C168 236 162 250 152 262"/>
+      </g>
+      <g fill="#C9A227">
+        <circle cx="152" cy="262" r="7"/>
+        <circle cx="152" cy="262" r="2.8" fill="#F6F1E7"/>
+      </g>
+      <!-- 散点 -->
+      <g fill="#2F5D3A" opacity="0.5">
+        <circle cx="92" cy="120" r="3"/>
+        <circle cx="248" cy="116" r="3"/>
+        <circle cx="84" cy="184" r="2.4"/>
+        <circle cx="256" cy="186" r="2.4"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<!-- ===== 三步开始 ===== -->
+<section>
+  <div class="sec-head">
+    <span class="num">01</span>
+    <h2>三步开始使用</h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <span class="idx">01</span>
+      <div>
+        <h3>下载安装包</h3>
+        <p>点击上方「下载」按钮，获取 <code>.zip</code> 安装包。</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="idx">02</span>
+      <div>
+        <h3>解压放入应用程序</h3>
+        <p>双击解压，把「翻翻花园」拖进「应用程序」文件夹。</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="idx">03</span>
+      <div>
+        <h3>首次打开</h3>
+        <p>未签名应用会提示验证：右键点应用 → <code>打开</code>，即可正常使用。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 玩法说明 ===== -->
+<section id="play">
+  <div class="sec-head">
+    <span class="num">02</span>
+    <h2>玩法说明</h2>
+  </div>
+
+  <div class="play-block">
+    <h3 class="block-title">难度选择</h3>
+    <table class="diff-table">
+      <colgroup>
+        <col style="width:16%">
+        <col style="width:19%">
+        <col style="width:19%">
+        <col style="width:30%">
+        <col style="width:16%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>难度</th>
+          <th>记忆时间</th>
+          <th>单人每关</th>
+          <th>操作限时</th>
+          <th>炸弹</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>宝宝</td>
+          <td>10 秒</td>
+          <td>120 秒</td>
+          <td>20 / 16 / 12 秒</td>
+          <td>无</td>
+        </tr>
+        <tr>
+          <td>普通</td>
+          <td>5 秒</td>
+          <td>60 秒</td>
+          <td>10 / 8 / 6 秒</td>
+          <td>每关 2 张</td>
+        </tr>
+        <tr>
+          <td>困难</td>
+          <td>3 秒</td>
+          <td>45 秒</td>
+          <td>8 / 6 / 4 秒</td>
+          <td>每关 4 张</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">所有难度均含 2 张沙漏、2 张百变牌；AI 记忆类型可单独选择。三个关卡依次为 4×4、6×6、8×8。</p>
+  </div>
+
+  <div class="play-grid">
+    <div class="play-block">
+      <h3 class="block-title">三种特殊牌</h3>
+      <ul class="rule-list">
+        <li><b>炸弹</b>：实际点击翻牌时立即爆炸，−5 分、清空连击并结束回合；单人重新开始一次操作，双人/人机换人。炸弹随后移除，不计入清关配对目标，也不额外扣总时间。开局展示和透视不会引爆。</li>
+        <li><b>沙漏</b>：与沙漏或 Joker 配对，按正常规则得分，并为该玩家的下一次操作增加 3 秒；单人仍享有普通配对的总时间 +3 秒。</li>
+        <li><b>百变牌 Joker</b>：可配任意非炸弹牌；若它配走了普通图案或沙漏，剩余同图案的那张牌会公开变为 Joker，避免留下无法配对的孤牌。</li>
+      </ul>
+      <p class="note">清完所有非炸弹牌即可过关。</p>
+    </div>
+
+    <div class="play-block">
+      <h3 class="block-title">计分与连击</h3>
+      <ul class="rule-list">
+        <li><b>连击</b>：玩家连续成功，单次得分依次为 10、12、14、16… 分（每多一次 +2）。第二次起显示 Combo X2、X3…；失败、超时、换人或进入下一关会清空连击。AI 仍按每对 10 分计算。</li>
+        <li><b>单人</b>：配对成功 +10 分、+3 秒；从第二次连续成功起，额外加分依次为 +2、+4、+6… 分。失败 −5 分、−3 秒，并清空连击。</li>
+        <li><b>双人</b>：在同一设备上轮流翻牌。成功至少 +10 分，连续配对额外加分，并保留回合；失败 −5 分并换人。分数可以为负，三关累计得分高者获胜。</li>
+      </ul>
+    </div>
+
+    <div class="play-block">
+      <h3 class="block-title">道具</h3>
+      <p class="note" style="margin:0 0 12px;">仅玩家自己的回合、尚未翻牌时使用；道具不打断连击。</p>
+      <ul class="rule-list">
+        <li><b>透视</b>：将所有未消除卡片展示 1 秒，冷却 30 秒；透视期间暂停计时和翻牌，AI 不会获得此次透视的额外记忆。</li>
+        <li><b>洗牌</b>：打乱未消除卡片的位置，冷却 20 秒；已配对卡片不动，AI 的旧位置记忆会清空。</li>
+      </ul>
+      <p class="note">双人各有独立冷却；冷却按游戏进行时间计算，暂停、记忆阶段和关间等待不计时，进入下一关不重置冷却。</p>
+    </div>
+
+    <div class="play-block">
+      <h3 class="block-title">人机对战与 AI</h3>
+      <ul class="rule-list">
+        <li>你先手，机器人后手，沿用双人计分规则。</li>
+        <li><b>健忘型 AI</b>：使用容量为 8 的先进先出队列；新的位置入队时，最早记住的位置被遗忘，重新看到队列中已有的位置不会改变其顺序。</li>
+        <li><b>记忆大师 AI</b>：保留所有展示过的牌，并按图案直接检索配对。每回合成功配对上限随关卡变化：4×4 为 2 次、6×6 为 3 次、8×8 为 4 次，达到上限自动换你；失败也立即换人。你仍然先手。</li>
+        <li>两者都观察开局展示，未知位置随机探索；RNN 与 Transformer 仅为记忆方式的教学类比，并未运行神经网络模型。每次翻牌间隔约 0.8 秒，暂停时机器人也停止。</li>
+      </ul>
+    </div>
+
+    <div class="play-block play-wide">
+      <h3 class="block-title">通用规则</h3>
+      <ul class="rule-list">
+        <li>每关开始先展示全部卡片，展示时长由难度决定，记忆结束后才开始计时。</li>
+        <li>每次配对限时由难度和关卡共同决定，超时视为失败；失败的卡片在 1 秒后盖回；结算动画期间暂停计时。</li>
+        <li>单人过关后总时间恢复该难度的初始值，分数累计。</li>
+        <li>暂停或切到其他页面时，已翻开的卡片会被遮住。</li>
+        <li>最高分仅保存在本机。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 关于 ===== -->
+<section>
+  <div class="sec-head">
+    <span class="num">03</span>
+    <h2>关于翻翻花园</h2>
+  </div>
+  <div class="about">
+    <div class="about-text">
+      <p>「翻翻花园」是一款在 macOS 上运行的桌面小应用，当前为 <b>三档入口版</b>：下载、解压、打开即可使用，无需额外安装依赖。</p>
+      <p>在 GitHub 仓库中同时提供源码与使用说明，方便查看与二次修改。</p>
+    </div>
+    <div class="about-meta">
+      <span class="chip">macOS</span>
+      <span class="chip">Swift</span>
+      <span class="chip">v1.0 · 三档入口版</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="flower"></span>
+  Made with Swift · 翻翻花园
+</footer>
+
+</body>
+</html>
